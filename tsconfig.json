@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outDir": "./dist",
+    "module": "commonjs",
+    "strict":true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "inlineSourceMap": true,
+    "forceConsistentCasingInFileNames": true, 
+    "noUnusedLocals": true,                          
+    "noUnusedParameters": true, 
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node"
+  }
+}
