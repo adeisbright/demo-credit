@@ -20,7 +20,7 @@ interface IConfig {
     },
     database: {
         host: string , 
-        database: string, 
+        databaseName: string, 
         port: number , 
         user:string,
         password: string, 
@@ -41,7 +41,7 @@ const Config: IConfig = {
     },
     database: {
         host: process.env.DB_HOST as string ,
-        database: process.env.DATABASE as string , 
+        databaseName: process.env.DATABASE as string , 
         port: Number(process.env.DB_PORT) as number, 
         user: process.env.DB_NAME as string ,
         password: process.env.DB_PASSWORD as string ,
