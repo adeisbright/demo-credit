@@ -8,6 +8,8 @@
   },
   "scripts": {
     "devstart": "ts-node-dev --respawn --pretty --transpile-only src/index.ts",
+    "migrate" : "knex migrate:latest --knexfile src/db/knexfile.ts",
+    "seed" : "knex seed:run --knexfile src/db/knexfile.ts",
     "start": "tsc && node --unhandled-rejections=strict ./dist/src/index.js",
     "test": "jest"
   },
