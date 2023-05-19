@@ -56,7 +56,7 @@ const Config: IConfig = {
         expires: Number(process.env.JWT_EXPIRES)
     },
     registrationTimeToExpire: Number(process.env.SIGNUP_LINK_EXPIRATION),
-    verificationLink: process.env.APP_FRONTEND_URL as string,
+    verificationLink: process.env.VERIFICATION_URL as string,
 }
 
 export default Config;

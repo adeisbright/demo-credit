@@ -9,26 +9,26 @@ export async function up(knex: Knex): Promise<void> {
             table.string("last_name", 60).notNullable();
             table.string("email").notNullable();
             table.string("password").notNullable()
-            table.timestamps()
+            table.timestamps(true , true)
         })
         .createTable("wallets", function (table: any) {
             table.increments("id");
-            table.double("balance");
+            table.double("balance").defaultTo(0.0);
             table.integer("userId").unsigned().notNullable() 
 
             table.foreign("userId").references("id").inTable("users")
-            table.timestamps()
+            table.timestamps(true , true)
         })
         .createTable("payment_processors", function (table: any) {
             table.increments("id");
             table.string("processor_name");
-             table.timestamps()
+           table.timestamps(true , true)
         })
         .createTable("transaction_types", function (table: any) {
             table.increments("id");
             table.string("title" , 60);
             table.text("description");
-             table.timestamps()
+            table.timestamps(true , true)
         })
         .createTable("transactions", function (table: any) {
             table.primary([
@@ -53,7 +53,7 @@ export async function up(knex: Knex): Promise<void> {
             table.foreign("recipient_id").references("id").inTable("users")
             table.foreign("transaction_type_id").references("id").inTable("transaction_types") 
             table.foreign("processor_id").references("id").inTable("payment_processors")  
-            table.timestamps()
+           table.timestamps(true , true)
         })
     
          .createTable("user_bank_accounts", function (table: any) {
@@ -68,18 +68,19 @@ export async function up(knex: Knex): Promise<void> {
             table.integer("user_id").unsigned().notNullable(); 
             
              table.foreign("user_id").references("id").inTable("users") 
-             table.timestamps() 
+            table.timestamps(true , true)
         })
 }
 
 
 export async function down(knex: Knex): Promise<void> {
     return knex.schema 
-        .dropTable("users")
-        .dropTable("wallets")
-        .dropTable("transactions")
-        .dropTable("transaction_types")
+        
         .dropTable("user_bank_accounts")
+        .dropTable("wallets")
+         .dropTable("transactions")
+        .dropTable("users")
+        .dropTable("transaction_types")
         .dropTable("payment_processors")
 }
 
