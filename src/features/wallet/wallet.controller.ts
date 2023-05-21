@@ -164,6 +164,44 @@ export const verifyFlutterwavePayment = async (
     }
 }
 
+export const verifyPaystackPayment = async (
+    _ : Request,
+    res : Response,
+    next : NextFunction
+) => {
+    try {
+
+        const result  = await confirmPayment(res.locals.transactionId, true)
+        if (result.status === 400) {
+            return res.send("Sorry, there is an issue with confirming this payment. Contact Support")
+        }
+        const customerEmail = result.data.customer.email 
+
+        const user = await getUser({email : customerEmail})
+        if (user.hasError) {
+            return next(new NotFoundError(user.message))
+        }
+        
+        const transactionData = {
+            reference: result.data.reference, 
+            sender_id: result.data.metadata.sender_id,
+            recipient_id: result.data.metadata.recipient_id, 
+            transaction_type_id: result.data.metadata.transaction_type_id, 
+            amount: result.data.amount/100,
+            transaction_date: result.data.created_at,
+            processor_id : result.data.metadata.payment_processor_id
+        }
+        
+        await addTransaction(transactionData)
+        
+        res.send("Payment Completed")
+            
+    } catch (error: any) {
+        console.log(error)
+        return next(new ApplicationError(error))
+    }
+}
+
 export const fundWalletHandler = async (
     req : Request,
     res : Response,
