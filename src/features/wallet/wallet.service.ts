@@ -155,3 +155,43 @@ export const  confirmPayment = async (
         }
     }
 }
+
+
+export const transferFund = async (data: ITransaction) => {
+    const transaction = await knexClient.transaction() 
+    try {
+        const { sender_id, recipient_id, amount } = data 
+        await knexClient("wallets")
+            .transacting(transaction)
+            .where({ id: sender_id })
+            .decrement("balance", amount)
+        
+         await knexClient("wallets")
+            .transacting(transaction)
+            .where({ id: recipient_id })
+             .increment("balance", amount)
+        
+        const transactionResult  = await knexClient("transactions")
+            .transacting(transaction)
+            .insert(data)
+            .returning(["amount" , "sender_id" , "recipient_id" ])
+        
+        if (!transactionResult) {
+            throw new Error("Unable to store transaction")
+        }
+        await transaction.commit() 
+        return {
+            data: transactionResult, 
+            hasError: false, 
+            message : "Ok"
+        }
+    } catch (error: any) {
+        console.log(error)
+        await transaction.rollback()
+        return {
+            data: {},
+            hasError: true,
+            message : error.message
+        }
+    }
+}

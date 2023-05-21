@@ -13,7 +13,7 @@ class FlutterwavePay implements IPaymentMethods {
     makePayment = async (email: string, transactionData: ITransaction) => {
 
         const {
-            transactionRef,
+            reference,
             amount,
             currency,
             sender_id, 
@@ -24,7 +24,7 @@ class FlutterwavePay implements IPaymentMethods {
         const paymentUrl = Config.paymentProcessors.fluttwave.paymentURL 
 
         const data = {
-            tx_ref : transactionRef,
+            tx_ref : reference,
             amount ,
             currency,
             customer:{

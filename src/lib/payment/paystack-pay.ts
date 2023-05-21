@@ -14,7 +14,7 @@ class PaystackPay implements IPaymentMethods {
     
         const paystackTransactionUrl = Config.paymentProcessors.paystack.transactionURL 
         const {
-            transactionRef,
+            reference,
             amount,
             currency,
             sender_id, 
@@ -27,7 +27,7 @@ class PaystackPay implements IPaymentMethods {
             email, 
             currency,
             amount: Number(amount)*100 ,
-            reference: transactionRef,
+            reference: reference,
             metadata: {
                 sender_id, 
                 recipient_id,

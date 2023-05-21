@@ -6,7 +6,8 @@ import {
     getBalance,
     findPaymentProcessor,
     generatePaymentLink,
-    confirmPayment
+    confirmPayment,
+    transferFund
 } from "./wallet.service";
 import { getUser } from "../user/user.service";
 import NotFoundError from "../../common/error-handler/NotFoundError";
@@ -97,12 +98,12 @@ export const generatePaymentLinkHandler = async (
             return next(new NotFoundError(transactionType.message))
         }
 
-        const transactionRef = referenceGenerator()
+        const reference = referenceGenerator()
 
         const transactionData: ITransaction = { 
             sender_id: user.id, 
             recipient_id : user.id ,
-            transactionRef  ,
+            reference ,
             currency : "NGN" ,
             amount,
             payment_processor_id,
@@ -253,18 +254,53 @@ export const transferHander = async (
     res : Response,
     next : NextFunction
 ) => {
-    try{
-        const userId = Number(req.params.userId)
-        const user = await getUser({ id: userId }) 
-        if (user.hasError) {
-            return next(new NotFoundError(user.message))
+    try {
+        const { amount, recipient_id } = req.body 
+        
+        const userId = Number(res.locals.payload.id)
+        const [sender, recipient] = await Promise.all([
+            getUser({ id: userId }),
+            getUser({ id: recipient_id })
+        ])
+
+        if (sender.hasError) {
+            return next(new NotFoundError(sender.message))
         }
-        const userBalance = await getBalance(userId)   
+        if (recipient.hasError) {
+            return next(new NotFoundError("Recipient not found"))
+        }
+
+        const senderBalance = await getBalance(userId)   
+        if (senderBalance.data.balance < amount) {
+            return next(new BadRequestError("Insufficient Balance"))
+        }
+
+        const transactionType = await getTransactionTypeId("transfer")
+        if (transactionType.hasError) {
+            return next(new NotFoundError(transactionType.message))
+        }
+
+        const reference = referenceGenerator()
+
+        const transactionData: ITransaction = { 
+            sender_id: sender.data.id as number, 
+            recipient_id : recipient.data.id  as number ,
+            reference ,
+            amount,
+            payment_processor_id : 1,
+            transaction_type_id: transactionType.data.id as number,
+            transaction_date : new Date()
+        }
+
+        const transaction = await transferFund(transactionData)
+        if (transaction.hasError) {
+            throw new Error(transaction.message)
+        }
         res.status(200).json({
-            message : "Balance obtained successfully",
+            message : "Transaction successful",
             success  :true , 
             statusCode : 200,
-            data : userBalance.data
+            data: transaction.data
         })
     }catch(error  :any){
         return next(new ApplicationError(error.message))
