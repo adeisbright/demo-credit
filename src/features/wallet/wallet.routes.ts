@@ -4,7 +4,8 @@ import {
     getPaymentProcessors,
     generatePaymentLinkHandler,
     verifyFlutterwavePayment, 
-    verifyPaystackPayment
+    verifyPaystackPayment,
+    transferHander
 } from "./wallet.controller"
 import validateToken from "../../middleware/validate-token"
 import validateFlutterwaveCallback from "../../middleware/validate-flutterwave-payment"
@@ -25,5 +26,8 @@ walletRouter.get(
 walletRouter.get(
     "/v1/wallet/verify-paystack-payment",
     validatePaystackCallback,
-    verifyPaystackPayment)
+    verifyPaystackPayment
+)
+
+walletRouter.post("/v1/wallet/transfer", validateToken, transferHander)
 export default walletRouter
