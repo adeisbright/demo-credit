@@ -14,22 +14,40 @@ interface IJWT {
 interface IConfig {
     serverPort: string;
     redis: {
-        port : number 
+        port: number
         host: string
-        password  :string 
+        password: string
     },
     database: {
-        host: string , 
-        databaseName: string, 
-        port: number , 
-        user:string,
-        password: string, 
-        client : string 
+        host: string,
+        databaseName: string,
+        port: number,
+        user: string,
+        password: string,
+        client: string
     },
     saltFactor: number
-    JWT: IJWT 
+    JWT: IJWT
     registrationTimeToExpire: number
-    verificationLink: string 
+    verificationLink: string
+    paymentProcessors: {
+        fluttwave: {
+            publicKey: string
+            secretKey: string
+            webHookHash: string
+            callbackURL: string
+            paymentURL: string
+            transactionsURL: string
+        },
+        paystack: {
+            secretKey: string
+            pblicKey: string
+            transactionURL: string
+            callbackURL: string
+            verificationURL: string
+        }
+    }
+
 }
 
 const Config: IConfig = {
@@ -57,6 +75,23 @@ const Config: IConfig = {
     },
     registrationTimeToExpire: Number(process.env.SIGNUP_LINK_EXPIRATION),
     verificationLink: process.env.VERIFICATION_URL as string,
+     paymentProcessors: {
+         fluttwave: {
+            publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY as string , 
+            secretKey: process.env.FLUTTERWAVE_SECRET_KEY as string ,
+            webHookHash:  process.env.FLW_WEBHOOK_HASH as string,
+            callbackURL:  process.env.FLUTTERWAVE_CALLBACK_URL as string,
+            paymentURL:  process.env.FLUTTERWAVE_PAYMENT_URL as string,
+            transactionsURL:  process.env.FLUTTERWAVE_TRANSACTIONS_URL as string,
+        },
+         paystack: {
+            secretKey:  process.env.PAYSTACK_SECRET_KEY as string,
+            pblicKey:process.env.PAYSTACK_PUBLIC_KEY as string , 
+            transactionURL: process.env.PAYSTACK_TRANSACTION_URL as string,
+            callbackURL: process.env.PAYSTACK_CALLBACK_URL as string,
+            verificationURL: process.env.PAYSTACK_VERIFICATION_URL as string,
+        }
+    }
 }
 
 export default Config;
