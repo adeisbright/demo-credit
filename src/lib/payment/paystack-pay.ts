@@ -16,14 +16,24 @@ class PaystackPay implements IPaymentMethods {
         const {
             transactionRef,
             amount,
-            currency
+            currency,
+            sender_id, 
+            recipient_id,
+            payment_processor_id,
+            transaction_type_id
         } = transactionData
 
         const paymentData = { 
             email, 
             currency,
             amount: Number(amount)*100 ,
-            reference : transactionRef,
+            reference: transactionRef,
+            metadata: {
+                sender_id, 
+                recipient_id,
+                payment_processor_id,
+                transaction_type_id
+            },
             callback_url : Config.paymentProcessors.paystack.callbackURL
         }
 
