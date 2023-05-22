@@ -2,6 +2,13 @@ import knexClient from "../../loader/knex-loader"
 import FlutterwavePay from "../../lib/payment/flutterwave-pay"
 import paystackPay from "../../lib/payment/paystack-pay" 
 import ITransaction from "../../lib/payment/transaction.interface"
+import axios from "axios"
+import Config from "../../config"
+
+const headers  = {
+    Authorization : `Bearer ${Config.paymentProcessors.fluttwave.secretKey}`,
+    'Content-Type' : "application/json"
+}
 
 export const findPaymentProcessors = async () => {
     try {
@@ -170,6 +177,127 @@ export const transferFund = async (data: ITransaction) => {
             .transacting(transaction)
             .where({ id: recipient_id })
              .increment("balance", amount)
+        
+        const transactionResult  = await knexClient("transactions")
+            .transacting(transaction)
+            .insert(data)
+            .returning(["amount" , "sender_id" , "recipient_id" ])
+        
+        if (!transactionResult) {
+            throw new Error("Unable to store transaction")
+        }
+        await transaction.commit() 
+        return {
+            data: transactionResult, 
+            hasError: false, 
+            message : "Ok"
+        }
+    } catch (error: any) {
+        console.log(error)
+        await transaction.rollback()
+        return {
+            data: {},
+            hasError: true,
+            message : error.message
+        }
+    }
+}
+
+export const sendMoneyToBank = async (transactionData : Record<string,any>) => {
+    try{
+        const {
+           accountNumber,
+           reference , 
+           amount , 
+           currency,
+           narration,
+           bankCode
+        } = transactionData
+
+        const transferUrl = Config.paymentProcessors.fluttwave.transferURL
+        
+        const data = {
+            reference ,
+            amount ,
+            currency,
+            narration,
+            account_number: accountNumber,
+            account_bank : bankCode
+        }
+       
+        const result = await axios.post(transferUrl , data , {
+            headers
+        })
+        
+        return {
+            hasError: false, 
+            message: "ok",
+            data : result 
+        }
+    }catch(error : any){
+        return {
+            hasError: true, 
+            message: error.message, 
+            data : {}
+       }
+    }
+}
+
+export const getBanks = async () => {
+    try {
+        const banksUrl = "https://api.flutterwave.com/v3/banks/NG"
+        const banks = await axios.get(banksUrl, {
+            headers
+        })
+
+        return {
+            data: banks.data,
+            hasError: false,
+            message: "OK"
+        }
+    } catch (error: any) {
+        return {
+            hasError: true,
+            message: error.message, 
+            data : []
+        }
+    }
+}
+
+export const verifyAccountNumber = async (accountNumber : string , bankCode : string)  => {
+    try {
+        const flwUrl = "https://api.flutterwave.com/v3/accounts/resolve"
+        const data = {
+            account_number: accountNumber,
+            account_bank: bankCode
+        }
+    
+        const result = await axios.post(flwUrl, data, {
+            headers
+        })
+
+        return {
+            hasError: false,
+            message : "ok",
+            data: result.data
+        }
+    } catch (error: any) {
+        return {
+            hasError: true,
+            message : error.message,
+            data: {}
+        }
+    }
+}
+
+export const withdrawFund = async (data: ITransaction) => {
+    const transaction = await knexClient.transaction() 
+    try {
+        const { sender_id,  amount } = data 
+        await knexClient("wallets")
+            .transacting(transaction)
+            .where({ id: sender_id })
+            .decrement("balance", amount)
         
         const transactionResult  = await knexClient("transactions")
             .transacting(transaction)
