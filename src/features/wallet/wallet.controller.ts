@@ -7,7 +7,10 @@ import {
     findPaymentProcessor,
     generatePaymentLink,
     confirmPayment,
-    transferFund
+    transferFund,
+    getBanks,
+    withdrawFund,
+    sendMoneyToBank
 } from "./wallet.service";
 import { getUser } from "../user/user.service";
 import NotFoundError from "../../common/error-handler/NotFoundError";
@@ -15,6 +18,7 @@ import BadRequestError from "../../common/error-handler/BadRequestError";
 import {v4 as referenceGenerator} from "uuid"
 import ITransaction from "../../lib/payment/transaction.interface";
 import { addTransaction, getTransactionTypeId } from "../transaction/transaction.service";
+import formatToNaira from "../../lib/format-to-naira";
 
 export const getPaymentProcessors = async (
     _ : Request,
@@ -203,52 +207,93 @@ export const verifyPaystackPayment = async (
     }
 }
 
-export const fundWalletHandler = async (
-    req : Request,
-    res : Response,
-    next : NextFunction
-) => {
-    try{
-        const userId = Number(req.params.userId)
-        const user = await getUser({ id: userId }) 
-        if (user.hasError) {
-            return next(new NotFoundError(user.message))
-        }
-        const userBalance = await getBalance(userId)   
-        res.status(200).json({
-            message : "Balance obtained successfully",
-            success  :true , 
-            statusCode : 200,
-            data : userBalance.data
-        })
-    }catch(error  :any){
-        return next(new ApplicationError(error.message))
-    }
-}
-
 export const withdrawalHandler = async (
     req : Request,
     res : Response,
     next : NextFunction
 ) => {
-    try{
-        const userId = Number(req.params.userId)
+    try {
+        const {amount , bankCode , accountNumber} = req.body
+        const userId = res.locals.payload.id 
         const user = await getUser({ id: userId }) 
         if (user.hasError) {
             return next(new NotFoundError(user.message))
         }
+
         const userBalance = await getBalance(userId)   
+        if (userBalance.data.balance < amount) {
+            return next(new BadRequestError("Insufficient Balance"))
+        }
+
+        const transactionType = await getTransactionTypeId("withdrawal")
+        if (transactionType.hasError) {
+            return next(new NotFoundError(transactionType.message))
+        }
+
+        const reference = referenceGenerator()
+
+        const transactionData: ITransaction = { 
+            sender_id: user.data.id as number, 
+            recipient_id : user.data.id  as number ,
+            reference ,
+            amount,
+            payment_processor_id : 1,
+            transaction_type_id: transactionType.data.id as number,
+            transaction_date : new Date()
+        }
+        
+        const withdrawalData =  {
+           accountNumber,
+           reference , 
+           amount , 
+           currency : "NGN",
+           narration : `Withdrawal of ${formatToNaira(amount)} from wallet`,
+           bankCode
+        }  
+        const [transaction, _] = await Promise.all([
+            withdrawFund(transactionData), 
+            sendMoneyToBank(withdrawalData)
+        ]) 
+
+        if (transaction.hasError) {
+            throw new Error(transaction.message)
+        }
+        //Todo:
+        //Initiate Reversal if transfer was not successful 
+
         res.status(200).json({
-            message : "Balance obtained successfully",
+            message : "Transaction successful",
             success  :true , 
             statusCode : 200,
-            data : userBalance.data
+            data: transaction.data
         })
+
     }catch(error  :any){
         return next(new ApplicationError(error.message))
     }
 }
 
+export const  getBanksHandler = async (
+    _ : Request,
+    res : Response,
+    next : NextFunction
+) => {
+    try{
+        const banks = await getBanks() 
+        if (banks.hasError) {
+            return next(new BadRequestError(banks.message))
+        }
+        res.status(200).json({
+            message: "Banks Retrieved successfully",
+            body : banks.data.data,
+            success : true ,
+            statusCode : 200
+        })
+    }catch(error : any){
+        return next(new ApplicationError(error.message))
+    }
+}
+    
 export const transferHander = async (
     req : Request,
     res : Response,

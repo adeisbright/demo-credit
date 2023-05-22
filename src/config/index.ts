@@ -38,6 +38,7 @@ interface IConfig {
             callbackURL: string
             paymentURL: string
             transactionsURL: string
+            transferURL : string 
         },
         paystack: {
             secretKey: string
@@ -82,7 +83,8 @@ const Config: IConfig = {
             webHookHash:  process.env.FLW_WEBHOOK_HASH as string,
             callbackURL:  process.env.FLUTTERWAVE_CALLBACK_URL as string,
             paymentURL:  process.env.FLUTTERWAVE_PAYMENT_URL as string,
-            transactionsURL:  process.env.FLUTTERWAVE_TRANSACTIONS_URL as string,
+            transactionsURL: process.env.FLUTTERWAVE_TRANSACTIONS_URL as string,
+            transferURL :process.env.FLUTTERWAVE_TRANSFER_URL as string, 
         },
          paystack: {
             secretKey:  process.env.PAYSTACK_SECRET_KEY as string,
