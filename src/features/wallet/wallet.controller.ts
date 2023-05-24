@@ -303,6 +303,7 @@ export const transferHander = async (
         const { amount, recipient_id } = req.body 
         
         const userId = Number(res.locals.payload.id)
+        
         const [sender, recipient] = await Promise.all([
             getUser({ id: userId }),
             getUser({ id: recipient_id })
