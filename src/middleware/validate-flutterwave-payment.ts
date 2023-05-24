@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 import BadRequestError from "../common/error-handler/BadRequestError" 
+import Constant from "../constant";
 
 
 /**
@@ -21,7 +22,7 @@ const validateFlutterwaveCallback = async (
             req.query.transaction_id == null || 
             req.query.tx_ref == null
         ){
-            return res.send("payment-unknown")
+            return res.send(Constant.messages.unknownPayment)
         }
 
         
@@ -30,9 +31,7 @@ const validateFlutterwaveCallback = async (
         const  transactionId = req.query.transaction_id as string
 
         if (status !== "successful"){
-            return res.render("payment-failed", {
-                title : "Payment Failed"
-            })
+            return res.send(Constant.messages.failedPayment)
         }
 
         const Schema = Joi.object({

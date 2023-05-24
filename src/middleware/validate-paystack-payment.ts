@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 import BadRequestError from "../common/error-handler/BadRequestError";
+import Constant from "../constant";
 /**
  * @description Validates the data provided by a user and the client service 
  * when a user tries to confirm  payment. 
@@ -23,7 +24,7 @@ const validatePaystackCallback = async (
             trxref === undefined || 
             trxref.length <= 0) {
             
-            return res.send("payment-unknown")
+            return res.send(Constant.messages.unknownPayment)
         }
 
         const Schema = Joi.object({

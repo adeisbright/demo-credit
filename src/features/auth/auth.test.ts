@@ -3,6 +3,7 @@ import request from "supertest"
 import Constant from "../../constant"
 import knexClient from "../../loader/knex-loader"
 import tedis from "../../loader/redis-loader"
+
 //Re-usable values 
 let password= "abcdefgh"
 let email = "example@foo.com" 
@@ -17,7 +18,6 @@ describe("Auth  Resource Handlers", () => {
     })
 
     it.skip("Should not register user as field is incomplete", async () => {
-           
         const res = await request(app)
             .post("/auth/sign-up")
             .send({
@@ -103,25 +103,5 @@ describe("Auth  Resource Handlers", () => {
         expect(res.body).toHaveProperty("data")
     })
 
-    // it("Should not allow unathenticated user to get quote", async () => {
-       
-    //     const res = await request(app)
-    //         .get(`/quote`)
-       
-        
-    //     expect(res.statusCode).toBe(400)
-    //     expect(res.body.success).toBeFalsy()
-    // })
-
-    // it("Should  allow authenticated user to get a quote", async () => {
-       
-    //     const res = await request(app)
-    //         .get(`/quote`)
-    //         .set({authorization:`Bearer ${token}`})
-       
-        
-    //     expect(res.statusCode).toBe(200)
-    //     expect(res.body).toHaveProperty("success") 
-    //     expect(res.body.success).toBe(true)
-    // })
+   
 })

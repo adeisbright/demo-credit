@@ -4,6 +4,7 @@ import { NextFunction , Request , Response } from "express";
 import NotAuthorizeError from "../common/error-handler/NotAuthorizeError";
 import BadRequestError from "../common/error-handler/BadRequestError";
 import Config from "../config";
+import Constant from "../constant";
 
 
 const {
@@ -32,7 +33,7 @@ const validateToken = async (
         if (bearer !== "Bearer") {
             res.set("WWW-Authenticate" , "Basic realm= Access Token , charset=UTF-8")
             return next(
-                new NotAuthorizeError("Bad Request  :Invalid Authorization")
+                new NotAuthorizeError(Constant.messages.invalidAuth)
             );
         }
 
@@ -40,7 +41,7 @@ const validateToken = async (
         const isBlacklistedToken = await tedis.get(blacklistedTokenKey) 
       
         if (isBlacklistedToken) {
-            return next(new BadRequestError("Please, login again. Session Expired"))
+            return next(new BadRequestError(Constant.messages.sessionExpired))
         }
         
         const payload: jwt.JwtPayload = jwt.verify(auth as string, secret, {
