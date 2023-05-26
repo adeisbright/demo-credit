@@ -1,6 +1,5 @@
 import { Router } from "express"
 import {
-    getBalanceHandler,
     getPaymentProcessors,
     generatePaymentLinkHandler,
     verifyFlutterwavePayment, 
@@ -15,24 +14,25 @@ import validatePaystackCallback from "../../middleware/validate-paystack-payment
 import validateWithdrawal from "../../middleware/validate-withdrawal"
 const walletRouter = Router() 
 
-walletRouter.route("/v1/payment-processors")
-    .get(getPaymentProcessors)
 
-walletRouter.get("/v1/users/:userId/wallet-balance",validateToken,getBalanceHandler)
-walletRouter.post("/v1/wallet/fund-wallet", validateToken, generatePaymentLinkHandler)
+
+
 walletRouter.get(
-    "/v1/wallet/verify-flutterwave-payment",
+    "/wallet/verify-flutterwave-payment",
     validateFlutterwaveCallback,
     verifyFlutterwavePayment
 )
 
 walletRouter.get(
-    "/v1/wallet/verify-paystack-payment",
+    "/wallet/verify-paystack-payment",
     validatePaystackCallback,
     verifyPaystackPayment
 )
-walletRouter.get("/v1/wallet/get-banks",getBanksHandler)
-walletRouter.post("/v1/wallet/transfer", validateToken, transferHander)
-walletRouter.post("/v1/wallet/withdraw", validateToken, validateWithdrawal, withdrawalHandler)
+walletRouter.use(validateToken)
+walletRouter.get("/payment-processors",getPaymentProcessors)
+walletRouter.get("/wallet/get-banks",getBanksHandler)
+walletRouter.post("/wallet/transfer", transferHander)
+walletRouter.post("/wallet/withdraw", validateWithdrawal, withdrawalHandler)
+walletRouter.post("/wallet/fund", generatePaymentLinkHandler)
 
 export default walletRouter

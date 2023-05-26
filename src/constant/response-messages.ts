@@ -13,7 +13,10 @@ const responseMessages = {
     invalidReference: "Invalid Reference",
     linkExpired: "Link has expire",
     invalidLogin: "Invalid Login Credentials",
-    correctLogin : "Login successfully",
+    correctLogin: "Login successfully",
+    unknownPayment: "Payment cannot be verified",
+    failedPayment: "Payment failed",
+    sessionExpired : "Please, login again. Session Expired",
 }
 
 
